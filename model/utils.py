@@ -100,6 +100,7 @@ def get_model(model_args, task_type: TaskType, config: AutoConfig, fix_bert: boo
             model_args.model_name_or_path,
             config=config,
             revision=model_args.model_revision,
+            cache_dir=model_args.cache_dir
         )
     elif model_args.prompt:
         config.pre_seq_len = model_args.pre_seq_len
@@ -108,6 +109,7 @@ def get_model(model_args, task_type: TaskType, config: AutoConfig, fix_bert: boo
             model_args.model_name_or_path,
             config=config,
             revision=model_args.model_revision,
+            cache_dir=model_args.cache_dir
         )
     else:
         model_class = AUTO_MODELS[task_type]
@@ -115,6 +117,7 @@ def get_model(model_args, task_type: TaskType, config: AutoConfig, fix_bert: boo
             model_args.model_name_or_path,
             config=config,
             revision=model_args.model_revision,
+            cache_dir=model_args.cache_dir
         )
 
         bert_param = 0

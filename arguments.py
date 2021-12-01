@@ -25,6 +25,7 @@ class DataTrainingArguments:
             "choices": TASKS
         },
     )
+
     dataset_name: str = field(
         metadata={
             "help": "The name of the dataset to use: " + ", ".join(DATASETS),
@@ -34,6 +35,21 @@ class DataTrainingArguments:
     dataset_config_name: Optional[str] = field(
         default=None, metadata={"help": "The configuration name of the dataset to use (via the datasets library)."}
     )
+
+    data_split: int = field(
+        default=0,
+        metadata={
+            "help": "the train/validation split to use"
+        }
+    )
+
+    data_cache_dir: str = field(
+        default=None,
+        metadata={
+            "help": "The cache dir for datasets"
+        }
+    )
+
     max_seq_length: int = field(
         default=128,
         metadata={

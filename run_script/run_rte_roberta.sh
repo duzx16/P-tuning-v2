@@ -2,11 +2,11 @@ export TASK_NAME=superglue
 export DATASET_NAME=rte
 export CUDA_VISIBLE_DEVICES=0
 
-bs=32
+bs=16
 lr=5e-3
 dropout=0.1
 psl=128
-epoch=100
+epoch=150
 
 python3 run.py \
   --model_name_or_path roberta-large \
@@ -14,6 +14,10 @@ python3 run.py \
   --dataset_name $DATASET_NAME \
   --do_train \
   --do_eval \
+  --do_predict \
+  --data_split 1 \
+  --cache_dir /mnt/huggingface/transformers \
+  --data_cache_dir /mnt/huggingface/datasets \
   --max_seq_length 128 \
   --per_device_train_batch_size $bs \
   --learning_rate $lr \

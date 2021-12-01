@@ -25,6 +25,7 @@ def get_trainer(args):
         model_args.model_name_or_path,
         use_fast=model_args.use_fast_tokenizer,
         revision=model_args.model_revision,
+        cache_dir=model_args.cache_dir
     )
 
     dataset = SuperGlueDataset(tokenizer, data_args, training_args)
@@ -41,6 +42,7 @@ def get_trainer(args):
             id2label=dataset.id2label,
             finetuning_task=data_args.dataset_name,
             revision=model_args.model_revision,
+            cache_dir=model_args.cache_dir
         )
     else:
         config = AutoConfig.from_pretrained(
@@ -48,6 +50,7 @@ def get_trainer(args):
             num_labels=dataset.num_labels,
             finetuning_task=data_args.dataset_name,
             revision=model_args.model_revision,
+            cache_dir=model_args.cache_dir
         )
 
     if not dataset.multiple_choice:
@@ -56,11 +59,13 @@ def get_trainer(args):
         model = get_model(model_args, TaskType.MULTIPLE_CHOICE, config, fix_bert=True)
 
     # Initialize our Trainer
+    training_args.logging_steps = 10
     trainer = BaseTrainer(
         model=model,
         args=training_args,
         train_dataset=dataset.train_dataset if training_args.do_train else None,
         eval_dataset=dataset.eval_dataset if training_args.do_eval else None,
+        predict_dataset=dataset.predict_dataset if training_args.do_predict else None,
         compute_metrics=dataset.compute_metrics,
         tokenizer=tokenizer,
         data_collator=dataset.data_collator,
@@ -68,4 +73,4 @@ def get_trainer(args):
     )
 
 
-    return trainer, None
+    return trainer, dataset.predict_dataset
