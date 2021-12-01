@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import Dict, OrderedDict
+from typing import Dict
+from collections import OrderedDict
 
 from transformers import Trainer
 
