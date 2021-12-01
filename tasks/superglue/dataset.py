@@ -26,7 +26,8 @@ logger = logging.getLogger(__name__)
 class SuperGlueDataset():
     def __init__(self, tokenizer: AutoTokenizer, data_args, training_args) -> None:
         super().__init__()
-        raw_datasets = load_dataset("super_glue", data_args.dataset_name)
+        raw_datasets = load_dataset("few_nlu/few_nlu.py", data_args.dataset_name,
+                                    data_split=data_args.data_split, cache_dir=data_args.data_cache_dir)
         self.tokenizer = tokenizer
         self.data_args = data_args
 
@@ -122,10 +123,14 @@ class SuperGlueDataset():
             if self.data_args.template_id == 1:
                 self.sentence2_key = "processed_sentence2"
                 examples["processed_sentence2"] = []
-            for sentence1, sentence2, word, start1, end1, start2, end2 in zip(examples["sentence1"], examples["sentence2"], examples["word"], examples["start1"], examples["end1"], examples["start2"], examples["end2"]):
-                if self.data_args.template_id == 0: #ROBERTA
-                    examples["processed_sentence1"].append(f"{sentence1} {sentence2} Does {word} have the same meaning in both sentences?")
-                elif self.data_args.template_id == 1: #BERT
+            for sentence1, sentence2, word, start1, end1, start2, end2 in zip(examples["sentence1"],
+                                                                              examples["sentence2"], examples["word"],
+                                                                              examples["start1"], examples["end1"],
+                                                                              examples["start2"], examples["end2"]):
+                if self.data_args.template_id == 0:  # ROBERTA
+                    examples["processed_sentence1"].append(
+                        f"{sentence1} {sentence2} Does {word} have the same meaning in both sentences?")
+                elif self.data_args.template_id == 1:  # BERT
                     examples["processed_sentence1"].append(word + ": " + sentence1)
                     examples["processed_sentence2"].append(word + ": " + sentence2)
 
@@ -140,12 +145,14 @@ class SuperGlueDataset():
             examples["text_a"] = []
             for premise, question in zip(examples["premise"], examples["question"]):
                 joiner = "because" if question == "cause" else "so"
-                text_a = f"{premise} {joiner}"                    
+                text_a = f"{premise} {joiner}"
                 examples["text_a"].append(text_a)
 
-            result1 = self.tokenizer(examples["text_a"], examples["choice1"], padding=self.padding, max_length=self.max_seq_length, truncation=True) 
-            result2 = self.tokenizer(examples["text_a"], examples["choice2"], padding=self.padding, max_length=self.max_seq_length, truncation=True)
-            result = {}  
+            result1 = self.tokenizer(examples["text_a"], examples["choice1"], padding=self.padding,
+                                     max_length=self.max_seq_length, truncation=True)
+            result2 = self.tokenizer(examples["text_a"], examples["choice2"], padding=self.padding,
+                                     max_length=self.max_seq_length, truncation=True)
+            result = {}
             for key in ["input_ids", "attention_mask", "token_type_ids"]:
                 if key in result1 and key in result2:
                     result[key] = []
@@ -154,7 +161,8 @@ class SuperGlueDataset():
             return result
 
         args = (
-            (examples[self.sentence1_key],) if self.sentence2_key is None else (examples[self.sentence1_key], examples[self.sentence2_key])
+            (examples[self.sentence1_key],) if self.sentence2_key is None else (
+                examples[self.sentence1_key], examples[self.sentence2_key])
         )
         result = self.tokenizer(*args, padding=self.padding, max_length=self.max_seq_length, truncation=True)
 
@@ -218,13 +226,14 @@ class SuperGlueDataset():
             "answers": list()
         }
         for idx, passage in enumerate(examples["passage"]):
-            query, entities, answers =  examples["query"][idx], examples["entities"][idx], examples["answers"][idx]
+            query, entities, answers = examples["query"][idx], examples["entities"][idx], examples["answers"][idx]
             index = examples["idx"][idx]
             passage = passage.replace("@highlight\n", "- ")
-            
+
             for ent_idx, ent in enumerate(entities):
                 question = query.replace("@placeholder", ent)
-                result = self.tokenizer(passage, question, padding=self.padding, max_length=self.max_seq_length, truncation=True)
+                result = self.tokenizer(passage, question, padding=self.padding, max_length=self.max_seq_length,
+                                        truncation=True)
                 label = 1 if ent in answers else 0
 
                 results["input_ids"].append(result["input_ids"])
